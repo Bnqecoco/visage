@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Visage</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --p1: #b06aff;
+  --p2: #ff6ab0;
+  --p3: #6ab8ff;
+  --p4: #ffb86a;
+  --grad: linear-gradient(135deg, #b06aff 0%, #ff6ab0 50%, #ffb86a 100%);
+  --grad2: linear-gradient(135deg, #6ab8ff 0%, #b06aff 100%);
+  --bg: #0a0812;
+  --glass: rgba(255,255,255,0.06);
+  --glass2: rgba(255,255,255,0.10);
+  --glass3: rgba(255,255,255,0.14);
+  --border: rgba(255,255,255,0.10);
+  --border2: rgba(255,255,255,0.18);
+  --text: #ffffff;
+  --text2: rgba(255,255,255,0.65);
+  --text3: rgba(255,255,255,0.35);
+  --green: #3dffb0;
+  --red: #ff6a6a;
+  --r: 18px;
+  --r2: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  overflow: hidden;
+}
+
+/* ── ANIMATED BG ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(176,106,255,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(255,106,176,0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 35% at 70% 10%, rgba(106,184,255,0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: bgPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+  0%   { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1;   transform: scale(1.05); }
+}
+
+/* ── APP SHELL ── */
+.app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* ── HEADER GLASS ── */
+.hdr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  background: rgba(10,8,18,0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+.logo {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.step-dots { display: flex; gap: 5px; align-items: center; }
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border2);
+  transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.dot.active {
+  width: 20px;
+  border-radius: 3px;
+  background: var(--grad);
+}
+.dot.done { background: var(--green); }
+
+/* ── SCREENS ── */
+.screens { flex: 1; overflow: hidden; position: relative; }
+
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { transform: translateX(0); }
+.screen.left   { transform: translateX(-40%) scale(0.95); opacity: 0.5; }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  flex-shrink: 0;
+  padding: 12px 20px 28px;
+  background: rgba(10,8,18,0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+}
+
+/* ── BUTTONS ── */
+.btn-main {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--grad);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 24px rgba(176,106,255,0.35);
+  position: relative;
+  overflow: hidden;
+}
+.btn-main::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s;
+}
+.btn-main:active::after { background: rgba(255,255,255,0.15); }
+.btn-main:active { transform: scale(0.97); }
+.btn-main:disabled { opacity: 0.3; box-shadow: none; cursor: not-allowed; }
+.btn-main.ghost {
+  background: var(--glass2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border2);
+  box-shadow: none;
+  color: var(--text2);
+}
+
+/* ── GLASS CARD ── */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+
+.glass-card2 {
+  background: var(--glass2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+}
+
+/* ══════════════════════════════
+   SCREEN 1 — UPLOAD
+══════════════════════════════ */
+#s1 { padding: 28px 20px 0; }
+
+.eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+.s-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+
+.s-sub {
+  font-size: 0.82rem;
+  color: var(--text3);
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+.photo-zone {
+  border: 1.5px dashed rgba(176,106,255,0.35);
+  border-radius: var(--r2);
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background: rgba(176,106,255,0.05);
+  transition: all 0.25s;
+}
+.photo-zone:active {
+  border-color: var(--p1);
+  background: rgba(176,106,255,0.1);
+}
+.photo-zone input {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer;
+  width: 100%; height: 100%;
+}
+.photo-zone img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.up-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--glass2);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  position: relative; z-index: 1;
+}
+
+.up-label {
+  font-size: 0.85rem;
+  color: var(--text2);
+  text-align: center;
+  line-height: 1.4;
+  position: relative; z-index: 1;
+}
+
+.photo-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 10px 14px;
+  background: linear-gradient(transparent, rgba(10,8,18,0.8));
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 2; display: none;
+}
+
+.btn-chip {
+  background: var(--glass2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.btn-chip:active { transform: scale(0.95); }
+
+.tips-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+  padding-bottom: 24px;
+}
+
+.tip {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 8px;
+  text-align: center;
+}
+.tip-icon { font-size: 1.1rem; margin-bottom: 5px; }
+.tip-text { font-size: 0.66rem; color: var(--text3); line-height: 1.4; }
+
+/* ══════════════════════════════
+   SCREEN 2 — STYLES
+══════════════════════════════ */
+#s2 { padding: 24px 20px 0; }
+
+.cat-pills {
+  display: flex; gap: 8px;
+  margin-bottom: 18px;
+  overflow-x: auto; padding-bottom: 2px;
+}
+.cat-pills::-webkit-scrollbar { display: none; }
+
+.pill {
+  padding: 8px 18px;
+  border-radius: 100px;
+  border: 1px solid var(--border2);
+  font-size: 0.75rem;
+  color: var(--text2);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.pill.active {
+  background: var(--grad);
+  border-color: transparent;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 12px rgba(176,106,255,0.3);
+}
+
+.styles-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 24px; }
+
+.style-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.style-row::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--grad);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.style-row:active::before { opacity: 0.06; }
+.style-row.sel {
+  border-color: rgba(176,106,255,0.5);
+  background: rgba(176,106,255,0.08);
+  box-shadow: 0 0 0 1px rgba(176,106,255,0.3), inset 0 0 20px rgba(176,106,255,0.05);
+}
+.style-row.sel::after {
+  content: '✓';
+  position: absolute; top: 12px; right: 12px;
+  width: 20px; height: 20px;
+  background: var(--grad);
+  border-radius: 50%;
+  font-size: 0.6rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 20px; text-align: center; color: white;
+}
+
+.style-emoji {
+  font-size: 1.8rem;
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: var(--glass2);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+
+.style-info { flex: 1; min-width: 0; position: relative; z-index: 1; }
+
+.style-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+
+.style-desc { font-size: 0.72rem; color: var(--text3); margin-bottom: 7px; line-height: 1.3; }
+
+.style-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.stag {
+  font-size: 0.62rem;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: var(--glass2);
+  border: 1px solid var(--border);
+  color: var(--text3);
+}
+.stag.time {
+  background: rgba(176,106,255,0.12);
+  border-color: rgba(176,106,255,0.25);
+  color: var(--p1);
+}
+
+/* ══════════════════════════════
+   SCREEN 3 — RESULT
+══════════════════════════════ */
+#s3 { padding: 0; }
+
+.result-header { padding: 24px 20px 14px; }
+
+.before-after {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3px; margin-bottom: 0;
+}
+
+.ba-pane { position: relative; }
+
+.ba-img {
+  width: 100%; height: 210px;
+  object-fit: cover; display: block;
+  background: var(--glass);
+}
+
+.ba-label {
+  position: absolute; bottom: 8px; left: 8px;
+  font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+  background: rgba(10,8,18,0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text2);
+  padding: 4px 10px; border-radius: 100px;
+  border: 1px solid var(--border);
+}
+
+.gen-overlay {
+  position: absolute; inset: 0;
+  background: rgba(10,8,18,0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(176,106,255,0.2);
+  border-top-color: var(--p1);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.gen-label { font-size: 0.72rem; color: var(--text2); }
+
+.analysis-wrap { padding: 14px 20px; }
+
+.acard {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.ac-label {
+  font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 6px;
+}
+
+.ac-value {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1rem; font-weight: 500;
+  color: var(--text); margin-bottom: 3px;
+  letter-spacing: -0.02em;
+}
+
+.ac-note { font-size: 0.76rem; color: var(--text2); line-height: 1.5; }
+
+.master-card {
+  background: rgba(176,106,255,0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(176,106,255,0.25);
+  border-radius: var(--r);
+  padding: 14px; margin-bottom: 16px;
+}
+
+.mc-head {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+
+.mc-icon {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(176,106,255,0.18);
+  border: 1px solid rgba(176,106,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+}
+
+.mc-title {
+  font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 500;
+}
+
+.mc-text { font-size: 0.8rem; color: var(--text2); line-height: 1.6; }
+
+/* ══════════════════════════════
+   SCREEN 4 — BOOKING
+══════════════════════════════ */
+#s4 { padding: 24px 20px 0; }
+
+.booking-sum {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.bs-row { display: flex; justify-content: space-between; font-size: 0.78rem; }
+.bs-key { color: var(--text3); }
+.bs-val { color: var(--text2); }
+
+/* Calendar */
+.cal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.9rem; font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.cal-nav {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--glass2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border2);
+  color: var(--text2); font-size: 0.8rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.cal-nav:active { transform: scale(0.9); }
+
+.cal-day-names {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+.cal-dn {
+  text-align: center; font-size: 0.6rem;
+  letter-spacing: 0.05em; color: var(--text3); padding: 3px 0;
+}
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+
+.cal-cell {
+  aspect-ratio: 1; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.76rem; cursor: pointer; color: var(--text2);
+  position: relative; transition: all 0.15s;
+}
+.cal-cell.past { color: var(--text3); opacity: 0.4; cursor: default; }
+.cal-cell.booked {
+  background: rgba(255,106,106,0.12);
+  color: rgba(255,106,106,0.5); cursor: default;
+}
+.cal-cell.free:hover {
+  background: rgba(176,106,255,0.15);
+  color: var(--p1);
+}
+.cal-cell.selected {
+  background: var(--grad);
+  color: white;
+  box-shadow: 0 2px 12px rgba(176,106,255,0.4);
+}
+.cal-cell.today::after {
+  content: '';
+  position: absolute; bottom: 3px;
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--p1);
+}
+.cal-cell.selected.today::after { background: white; }
+
+.cal-legend {
+  display: flex; gap: 14px; margin-top: 10px; margin-bottom: 18px;
+}
+.leg { display: flex; align-items: center; gap: 5px; font-size: 0.66rem; color: var(--text3); }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Time slots */
+.sec-label {
+  font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 10px;
+}
+
+.time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 20px; }
+
+.tslot {
+  padding: 10px 4px; text-align: center;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  font-size: 0.76rem; color: var(--text2);
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+.tslot:active { transform: scale(0.95); }
+.tslot:hover { border-color: rgba(176,106,255,0.4); color: var(--p1); }
+.tslot.taken { opacity: 0.3; cursor: default; text-decoration: line-through; }
+.tslot.selected {
+  background: var(--grad);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 2px 10px rgba(176,106,255,0.35);
+}
+
+/* Form */
+.field { margin-bottom: 12px; }
+.field label {
+  display: block; font-size: 0.62rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  color: var(--text); padding: 13px 16px;
+  font-family: 'Inter', sans-serif; font-size: 0.88rem;
+  outline: none; transition: border-color 0.2s;
+}
+.field input:focus { border-color: rgba(176,106,255,0.6); }
+.field input::placeholder { color: var(--text3); }
+
+.form-wrap { padding-bottom: 30px; }
+
+/* ══════════════════════════════
+   SUCCESS
+══════════════════════════════ */
+.success-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,8,18,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem; text-align: center; z-index: 200;
+}
+.success-overlay.open { display: flex; animation: fadeUp 0.4s ease; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.success-ring {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(61,255,176,0.1);
+  border: 1.5px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; margin-bottom: 1.5rem;
+  box-shadow: 0 0 30px rgba(61,255,176,0.2);
+}
+
+.success-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1.7rem; font-weight: 700;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--green), var(--p3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 0.5rem;
+}
+
+.success-sub { font-size: 0.82rem; color: var(--text3); line-height: 1.6; margin-bottom: 2rem; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo">visage</div>
+    <div class="step-dots">
+      <div class="dot active" id="d1"></div>
+      <div class="dot" id="d2"></div>
+      <div class="dot" id="d3"></div>
+      <div class="dot" id="d4"></div>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ═══ S1: ФОТО ═══ -->
+    <div class="screen active" id="s1">
+      <div class="eyebrow">Шаг 1 из 4</div>
+      <div class="s-title">Загрузи<br>фото</div>
+      <div class="s-sub">Анфас, без фильтров.<br>Данные не сохраняются.</div>
+
+      <div class="photo-zone" id="photoZone">
+        <input type="file" id="photoInput" accept="image/*" capture="user"/>
+        <div class="up-icon" id="upIcon">📷</div>
+        <div class="up-label" id="upLabel">Сфотографировать<br>или выбрать из галереи</div>
+        <img id="photoPreview" src="" alt="" style="display:none;"/>
+        <div class="photo-bar" id="photoBar">
+          <span style="font-size:0.72rem; color:rgba(255,255,255,0.6);">Фото готово</span>
+          <button class="btn-chip" onclick="resetPhoto(event)">Изменить</button>
+        </div>
+      </div>
+
+      <div class="tips-row">
+        <div class="tip"><div class="tip-icon">☀️</div><div class="tip-text">Хорошее освещение</div></div>
+        <div class="tip"><div class="tip-icon">🧍</div><div class="tip-text">Анфас, прямо</div></div>
+        <div class="tip"><div class="tip-icon">🚫</div><div class="tip-text">Без масок</div></div>
+      </div>
+    </div>
+
+    <!-- ═══ S2: СТИЛЬ ═══ -->
+    <div class="screen" id="s2">
+      <div class="eyebrow">Шаг 2 из 4</div>
+      <div class="s-title">Выбери<br>образ</div>
+
+      <div class="cat-pills">
+        <button class="pill active" onclick="switchCat('hair',this)">Стрижки</button>
+        <button class="pill" onclick="switchCat('brows',this)">Брови</button>
+      </div>
+
+      <div class="styles-list" id="cat-hair">
+        <div class="style-row sel" onclick="pickStyle(this)" data-name="Боб-каре" data-time="1.5–2 ч" data-desc="Классика с чёткой горизонтальной линией">
+          <div class="style-emoji">💇‍♀️</div>
+          <div class="style-info">
+            <div class="style-name">Боб-каре</div>
+            <div class="style-desc">Классика, чёткая линия</div>
+            <div class="style-tags"><span class="stag time">⏱ 1.5–2 ч</span><span class="stag">Стандарт</span></div>
+          </div>
+        </div>
+        <div class="style-row" onclick="pickStyle(this)" data-name="Пикси" data-time="45–60 мин" data-desc="Короткая смелая стрижка">
+          <div class="style-emoji">✂️</div>
+          <div class="style-info">
+            <div class="style-name">Пикси</div>
+            <div class="style-desc">Короткая, смелая</div>
+            <div class="style-tags"><span class="stag time">⏱ 45–60 мин</span><span class="stag">Быстро</span></div>
+          </div>
+        </div>
+        <div class="style-row" onclick="pickStyle(this)" data-name="Лоб" data-time="1–1.5 ч" data-desc="Длинное боб до плеч">
+          <div class="style-emoji">🌊</div>
+          <div class="style-info">
+            <div class="style-name">Лоб</div>
+            <div class="style-desc">Длинное боб, до плеч</div>
+            <div class="style-tags"><span class="stag time">⏱ 1–1.5 ч</span><span class="stag">Стандарт</span></div>
+          </div>
+        </div>
+        <div class="style-row" onclick="pickStyle(this)" data-name="Слои + удлинение" data-time="2–2.5 ч" data-desc="Многослойная стрижка с объёмом">
+          <div class="style-emoji">🌿</div>
+          <div class="style-info">
+            <div class="style-name">Слои + удлинение</div>
+            <div class="style-desc">Объём и текстура</div>
+            <div class="style-tags"><span class="stag time">⏱ 2–2.5 ч</span><span class="stag">Сложная</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="styles-list" id="cat-brows" style="display:none;">
+        <div class="style-row sel" onclick="pickStyle(this)" data-name="Натуральные брови" data-time="1–1.5 ч" data-desc="Мягкий изгиб, природность">
+          <div class="style-emoji">🍃</div>
+          <div class="style-info">
+            <div class="style-name">Натуральные</div>
+            <div class="style-desc">Мягкий изгиб, природность</div>
+            <div class="style-tags"><span class="stag time">⏱ 1–1.5 ч</span><span class="stag">Базовая</span></div>
+          </div>
+        </div>
+        <div class="style-row" onclick="pickStyle(this)" data-name="Широкие прямые" data-time="1.5–2 ч" data-desc="Чёткая горизонтальная форма">
+          <div class="style-emoji">▬</div>
+          <div class="style-info">
+            <div class="style-name">Широкие прямые</div>
+            <div class="style-desc">Чёткая горизонтальная форма</div>
+            <div class="style-tags"><span class="stag time">⏱ 1.5–2 ч</span><span class="stag">Стандарт</span></div>
+          </div>
+        </div>
+        <div class="style-row" onclick="pickStyle(this)" data-name="Арка" data-time="1–1.5 ч" data-desc="Высокий изгиб, элегантность">
+          <div class="style-emoji">🌙</div>
+          <div class="style-info">
+            <div class="style-name">Арка</div>
+            <div class="style-desc">Высокий изгиб, элегантность</div>
+            <div class="style-tags"><span class="stag time">⏱ 1–1.5 ч</span><span class="stag">Стандарт</span></div>
+          </div>
+        </div>
+        <div class="style-row" onclick="pickStyle(this)" data-name="Феадер-техника" data-time="2 ч" data-desc="Пушистые объёмные брови">
+          <div class="style-emoji">✨</div>
+          <div class="style-info">
+            <div class="style-name">Феадер-техника</div>
+            <div class="style-desc">Пушистые, объёмные</div>
+            <div class="style-tags"><span class="stag time">⏱ 2 ч</span><span class="stag">Премиум</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ S3: РЕЗУЛЬТАТ ═══ -->
+    <div class="screen" id="s3">
+      <div class="result-header">
+        <div class="eyebrow">Шаг 3 из 4</div>
+        <div class="s-title" id="s3Title">Твой образ</div>
+      </div>
+
+      <div class="before-after">
+        <div class="ba-pane">
+          <img class="ba-img" id="baBefore" src="" alt="до"/>
+          <div class="ba-label">До</div>
+        </div>
+        <div class="ba-pane" style="position:relative;">
+          <img class="ba-img" id="baAfter" src="" alt="после" style="display:none;"/>
+          <div class="ba-label" style="z-index:3;">После</div>
+          <div class="gen-overlay" id="genOverlay">
+            <div class="spinner"></div>
+            <div class="gen-label" id="genLabel">Генерируем образ...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="analysis-wrap">
+        <div id="analysisBlock" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="acard">
+              <div class="ac-label">Форма лица</div>
+              <div class="ac-value" id="acFace">—</div>
+            </div>
+            <div class="acard">
+              <div class="ac-label">Время услуги</div>
+              <div class="ac-value" id="acTime">—</div>
+            </div>
+          </div>
+          <div class="acard" style="margin-bottom:8px;">
+            <div class="ac-label">Почему подходит</div>
+            <div class="ac-note" id="acWhy">—</div>
+          </div>
+          <div class="master-card">
+            <div class="mc-head">
+              <div class="mc-icon">✂️</div>
+              <div class="mc-title">Карточка мастера</div>
+            </div>
+            <div class="mc-text" id="mcText">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ S4: ЗАПИСЬ ═══ -->
+    <div class="screen" id="s4">
+      <div class="eyebrow">Шаг 4 из 4</div>
+      <div class="s-title">Запись</div>
+
+      <div class="booking-sum" id="bookSum">
+        <div class="bs-row"><span class="bs-key">Услуга</span><span class="bs-val" id="bsStyle">—</span></div>
+        <div class="bs-row"><span class="bs-key">Время</span><span class="bs-val" id="bsTime">—</span></div>
+      </div>
+
+      <div class="cal-head">
+        <button class="cal-nav" onclick="prevMonth()">‹</button>
+        <div class="cal-month" id="calMonth">Июнь 2026</div>
+        <button class="cal-nav" onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-day-names">
+        <div class="cal-dn">Пн</div><div class="cal-dn">Вт</div><div class="cal-dn">Ср</div>
+        <div class="cal-dn">Чт</div><div class="cal-dn">Пт</div><div class="cal-dn">Сб</div>
+        <div class="cal-dn">Вс</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <div class="leg"><div class="leg-dot" style="background:var(--p1)"></div>Выбрано</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--red);opacity:.6"></div>Занято</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--text3)"></div>Прошедшее</div>
+      </div>
+
+      <div class="sec-label">Время</div>
+      <div class="time-grid" id="timeGrid"></div>
+
+      <div class="form-wrap">
+        <div class="sec-label">Контакты</div>
+        <div class="field"><label>Имя</label><input type="text" id="fName" placeholder="Твоё имя"/></div>
+        <div class="field"><label>Телефон</label><input type="tel" id="fPhone" placeholder="+7 (___) ___-__-__"/></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-bar">
+    <button class="btn-main" id="mainBtn" onclick="nextStep()">Продолжить →</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-ring">✓</div>
+  <div class="success-title">Готово!</div>
+  <div class="success-sub" id="successText">Запись подтверждена.</div>
+  <button class="btn-main" style="max-width:280px;" onclick="restartApp()">Начать заново</button>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────
+let step = 1;
+let photoUrl = null;
+let selStyle = { name: 'Боб-каре', time: '1.5–2 ч', desc: '' };
+let selDate = null;
+let selTime = null;
+let aiDone = false;
+
+const GEMINI_KEY = 'AQ.Ab8RN6JEJrtFoLATcgtpnBJiV0CcKBKB71rYuXJmattSx4SyIQ';
+
+const stylePrompts = {
+  'Боб-каре': 'Bob haircut, sharp horizontal line at jaw level, sleek straight hair',
+  'Пикси': 'Pixie haircut, very short feminine hair, tapered sides',
+  'Лоб': 'Long bob lob haircut to shoulders, soft waves, collarbone length',
+  'Слои + удлинение': 'Long layered haircut with volume, cascading layers, textured ends',
+  'Натуральные брови': 'Natural soft arched eyebrows, well-groomed natural shape',
+  'Широкие прямые': 'Thick straight horizontal eyebrows, bold defined brows',
+  'Арка': 'High arched eyebrows, elegant arch, defined brows',
+  'Феадер-техника': 'Feathered fluffy eyebrows, wispy natural brow hairs, full brows',
+};
+
+// ── FAKE BOOKED ────────────────────────────────────
+const booked = (() => {
+  const r = {}; const now = new Date();
+  const add = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); };
+  r[add(now,1)]=['10:00','12:00','16:00'];
+  r[add(now,2)]=['11:00','13:00'];
+  r[add(now,4)]=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+  return r;
+})();
+const ALL_TIMES=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+
+// ── CALENDAR ──────────────────────────────────────
+let cy, cm;
+(()=>{ const n=new Date(); cy=n.getFullYear(); cm=n.getMonth(); })();
+const MO=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+function renderCal() {
+  document.getElementById('calMonth').textContent = MO[cm]+' '+cy;
+  const g=document.getElementById('calGrid'); g.innerHTML='';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const first=new Date(cy,cm,1);
+  let dow=first.getDay(); dow=dow===0?6:dow-1;
+  const days=new Date(cy,cm+1,0).getDate();
+  for(let i=0;i<dow;i++){const d=document.createElement('div');d.className='cal-cell';g.appendChild(d);}
+  for(let d=1;d<=days;d++){
+    const cell=document.createElement('div');
+    const dt=new Date(cy,cm,d); const ds=dt.toISOString().slice(0,10);
+    cell.className='cal-cell'; cell.textContent=d;
+    if(dt<today){cell.classList.add('past');}
+    else{
+      const bk=booked[ds]||[];
+      if(bk.length>=ALL_TIMES.length){cell.classList.add('booked');}
+      else{cell.classList.add('free');cell.onclick=()=>pickDate(ds);}
+    }
+    if(dt.toDateString()===today.toDateString())cell.classList.add('today');
+    if(selDate===ds)cell.classList.add('selected');
+    g.appendChild(cell);
+  }
+}
+
+function pickDate(ds){
+  selDate=ds; selTime=null;
+  renderCal(); renderTimes(); updateBtn();
+}
+function prevMonth(){cm--;if(cm<0){cm=11;cy--;}renderCal();}
+function nextMonth(){cm++;if(cm>11){cm=0;cy++;}renderCal();}
+
+function renderTimes(){
+  const g=document.getElementById('timeGrid'); g.innerHTML='';
+  if(!selDate)return;
+  const tk=booked[selDate]||[];
+  ALL_TIMES.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tslot'; b.textContent=t;
+    if(tk.includes(t)){b.classList.add('taken');b.disabled=true;}
+    else{
+      b.onclick=()=>{selTime=t;document.querySelectorAll('.tslot').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');updateBtn();};
+      if(selTime===t)b.classList.add('selected');
+    }
+    g.appendChild(b);
+  });
+}
+
+// ── PHOTO ─────────────────────────────────────────
+document.getElementById('photoInput').addEventListener('change',function(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    photoUrl=ev.target.result;
+    document.getElementById('photoPreview').src=photoUrl;
+    document.getElementById('photoPreview').style.display='block';
+    document.getElementById('upIcon').style.display='none';
+    document.getElementById('upLabel').style.display='none';
+    document.getElementById('photoBar').style.display='flex';
+    updateBtn();
+  };
+  r.readAsDataURL(f);
+});
+
+function resetPhoto(e){
+  e.stopPropagation(); photoUrl=null;
+  document.getElementById('photoInput').value='';
+  document.getElementById('photoPreview').style.display='none';
+  document.getElementById('upIcon').style.display='flex';
+  document.getElementById('upLabel').style.display='block';
+  document.getElementById('photoBar').style.display='none';
+  updateBtn();
+}
+
+// ── STYLE ─────────────────────────────────────────
+function switchCat(cat,btn){
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cat-hair').style.display=cat==='hair'?'flex':'none';
+  document.getElementById('cat-brows').style.display=cat==='brows'?'flex':'none';
+  ['cat-hair','cat-brows'].forEach(id=>{const el=document.getElementById(id);if(el.style.display!=='none')el.style.flexDirection='column';});
+  const first=document.querySelector('#cat-'+cat+' .style-row');
+  if(first)pickStyle(first);
+}
+
+function pickStyle(el){
+  el.closest('.styles-list').querySelectorAll('.style-row').forEach(r=>r.classList.remove('sel'));
+  el.classList.add('sel');
+  selStyle={name:el.dataset.name,time:el.dataset.time,desc:el.dataset.desc||''};
+}
+
+// ── NAV ───────────────────────────────────────────
+function goTo(n){
+  const ids=['s1','s2','s3','s4'];
+  ids.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.remove('active','left');
+    if(i+1<n)el.classList.add('left');
+    if(i+1===n)el.classList.add('active');
+  });
+  for(let i=1;i<=4;i++){
+    const d=document.getElementById('d'+i);
+    d.classList.remove('active','done');
+    if(i<n)d.classList.add('done');
+    if(i===n)d.classList.add('active');
+  }
+  step=n; updateBtn();
+}
+
+function nextStep(){
+  if(step===1){if(!photoUrl)return;goTo(2);}
+  else if(step===2){goTo(3);startGen();}
+  else if(step===3){if(!aiDone)return;document.getElementById('bsStyle').textContent=selStyle.name;document.getElementById('bsTime').textContent=selStyle.time;renderCal();renderTimes();goTo(4);}
+  else if(step===4){confirmBooking();}
+}
+
+function updateBtn(){
+  const btn=document.getElementById('mainBtn');
+  if(step===1){btn.textContent='Выбрать образ →';btn.disabled=!photoUrl;}
+  else if(step===2){btn.textContent='Сгенерировать →';btn.disabled=false;}
+  else if(step===3){btn.textContent=aiDone?'Записаться →':'Генерируем...';btn.disabled=!aiDone;}
+  else if(step===4){
+    const ok=selDate&&selTime&&document.getElementById('fName').value.trim()&&document.getElementById('fPhone').value.trim();
+    btn.textContent='Подтвердить запись →';btn.disabled=!ok;
+  }
+}
+
+document.getElementById('fName').addEventListener('input',updateBtn);
+document.getElementById('fPhone').addEventListener('input',updateBtn);
+
+// ── GENERATION ────────────────────────────────────
+const genMsgs=['Анализируем форму лица...','Подбираем стиль...','Генерируем образ...','Финальные штрихи...'];
+
+async function startGen(){
+  aiDone=false; updateBtn();
+  document.getElementById('s3Title').textContent=selStyle.name;
+  document.getElementById('baBefore').src=photoUrl;
+  document.getElementById('baAfter').style.display='none';
+  document.getElementById('genOverlay').style.display='flex';
+  document.getElementById('analysisBlock').style.display='none';
+
+  let mi=0;
+  const t=setInterval(()=>{if(mi<genMsgs.length){document.getElementById('genLabel').textContent=genMsgs[mi++];}else{clearInterval(t);}},1200);
+
+  const [imgRes,txtRes]=await Promise.allSettled([
+    genImage(),
+    genAnalysis()
+  ]);
+
+  clearInterval(t);
+
+  const after=document.getElementById('baAfter');
+  if(imgRes.status==='fulfilled'){after.src=imgRes.value;after.style.filter='none';}
+  else{after.src=photoUrl;after.style.filter='saturate(1.1) contrast(1.06)';}
+  after.style.display='block';
+  document.getElementById('genOverlay').style.display='none';
+
+  const a=txtRes.status==='fulfilled'?txtRes.value:{face_shape:'Овал',why_fits:selStyle.name+' создаёт гармоничный образ.',master:'Выполнять с учётом структуры волос. Время: '+selStyle.time+'.'};
+  document.getElementById('acFace').textContent=a.face_shape;
+  document.getElementById('acTime').textContent=selStyle.time;
+  document.getElementById('acWhy').textContent=a.why_fits;
+  document.getElementById('mcText').textContent=a.master;
+  document.getElementById('analysisBlock').style.display='block';
+
+  aiDone=true; updateBtn();
+}
+
+async function genImage(){
+  const prompt=`Transform this person's hairstyle to: ${stylePrompts[selStyle.name]||selStyle.name}. Keep the person's face, skin tone, and facial features exactly the same. Only change the hair or eyebrows. Photorealistic high quality portrait.`;
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${GEMINI_KEY}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:'image/jpeg',data:photoUrl.split(',')[1]}}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})
+  });
+  if(!res.ok)throw new Error(res.status);
+  const d=await res.json();
+  for(const p of(d.candidates?.[0]?.content?.parts||[])){
+    if(p.inline_data?.mime_type?.startsWith('image/')){
+      return'data:'+p.inline_data.mime_type+';base64,'+p.inline_data.data;
+    }
+  }
+  throw new Error('no image');
+}
+
+async function genAnalysis(){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:`Ты бьюти-стилист. Стиль: "${selStyle.name}" (${selStyle.time}). Ответь ТОЛЬКО JSON без markdown: {"face_shape":"слово","why_fits":"2 предложения","master":"инструкция мастеру 2 предложения"}`}]})
+  });
+  const d=await r.json();
+  return JSON.parse(d.content.map(i=>i.text||'').join('').replace(/\`\`\`json|\`\`\`/g,'').trim());
+}
+
+// ── BOOKING ───────────────────────────────────────
+function confirmBooking(){
+  const name=document.getElementById('fName').value.trim();
+  const phone=document.getElementById('fPhone').value.trim();
+  if(!name||!phone||!selDate||!selTime)return;
+  const bks=JSON.parse(localStorage.getItem('visage_bookings')||'[]');
+  bks.push({id:Date.now(),name,phone,date:selDate,time:selTime,style:selStyle.name,duration:selStyle.time,createdAt:new Date().toISOString()});
+  localStorage.setItem('visage_bookings',JSON.stringify(bks));
+  if(!booked[selDate])booked[selDate]=[];
+  booked[selDate].push(selTime);
+  document.getElementById('successText').textContent=`${name}, ты записан(а) на ${selDate} в ${selTime}. Мастер свяжется с тобой.`;
+  document.getElementById('successOverlay').classList.add('open');
+}
+
+function restartApp(){
+  photoUrl=null;selDate=null;selTime=null;aiDone=false;
+  document.getElementById('photoInput').value='';
+  document.getElementById('photoPreview').style.display='none';
+  document.getElementById('upIcon').style.display='flex';
+  document.getElementById('upLabel').style.display='block';
+  document.getElementById('photoBar').style.display='none';
+  document.getElementById('fName').value='';
+  document.getElementById('fPhone').value='';
+  document.getElementById('successOverlay').classList.remove('open');
+  goTo(1);
+}
+
+updateBtn();
+</script>
+</body>
+</html>

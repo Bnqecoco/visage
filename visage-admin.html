@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Visage — Панель мастера</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0c0b09;
+  --bg2: #151310;
+  --bg3: #1c1a15;
+  --cream: #f2ead6;
+  --cream2: #c4b99a;
+  --cream3: #6e6456;
+  --gold: #c8a96a;
+  --gold2: #8b6f3e;
+  --border: rgba(242,234,214,0.08);
+  --border2: rgba(242,234,214,0.18);
+  --green: #3d7a5c;
+  --green-bg: rgba(61,122,92,0.15);
+  --red: #7a3d3d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+/* LOGIN */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.login-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.login-logo em { color: var(--gold); font-style: normal; }
+.login-sub { font-size: 0.75rem; color: var(--cream3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2rem; }
+
+.login-field { margin-bottom: 12px; text-align: left; }
+.login-field label { display: block; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream3); margin-bottom: 5px; }
+.login-field input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--cream);
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.login-field input:focus { border-color: var(--gold); }
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: opacity 0.2s;
+}
+.btn-login:hover { opacity: 0.88; }
+
+.login-err { font-size: 0.75rem; color: #c06060; margin-top: 8px; min-height: 1em; }
+
+/* ADMIN LAYOUT */
+.admin-wrap { display: none; min-height: 100vh; }
+
+.admin-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 10;
+}
+
+.admin-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 300; letter-spacing: 0.08em; }
+.admin-logo em { color: var(--gold); font-style: normal; }
+.admin-badge { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream3); border: 1px solid var(--border2); padding: 3px 10px; border-radius: 20px; }
+
+.admin-hdr-right { display: flex; align-items: center; gap: 12px; }
+
+.btn-logout { background: none; border: 1px solid var(--border2); color: var(--cream3); padding: 5px 12px; border-radius: 2px; font-size: 0.72rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.btn-logout:hover { border-color: var(--cream2); color: var(--cream2); }
+
+.admin-body { max-width: 960px; margin: 0 auto; padding: 28px 24px; }
+
+/* DATE TABS */
+.date-tabs { display: flex; gap: 6px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+.date-tabs::-webkit-scrollbar { display: none; }
+
+.date-tab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  background: var(--bg2);
+  color: var(--cream2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.date-tab:hover { border-color: var(--cream2); }
+.date-tab.active { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+
+.date-tab-day { font-weight: 500; display: block; }
+.date-tab-count { font-size: 0.65rem; opacity: 0.7; }
+
+/* STATS ROW */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px;
+}
+
+.stat-label { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream3); margin-bottom: 6px; }
+.stat-value { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 300; color: var(--cream); }
+
+/* BOOKING CARDS */
+.bookings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.bookings-title { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream3); }
+
+.btn-add-test {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--cream3);
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-add-test:hover { border-color: var(--gold); color: var(--gold); }
+
+.bookings-list { display: flex; flex-direction: column; gap: 8px; }
+
+.booking-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.2s;
+}
+.booking-card:hover { border-color: var(--border2); }
+.booking-card.done { opacity: 0.5; }
+
+.bc-time {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--gold);
+  min-width: 56px;
+  flex-shrink: 0;
+}
+
+.bc-info { flex: 1; min-width: 0; }
+
+.bc-name { font-size: 0.92rem; color: var(--cream); margin-bottom: 2px; font-weight: 400; }
+
+.bc-meta { font-size: 0.75rem; color: var(--cream3); display: flex; gap: 10px; flex-wrap: wrap; }
+
+.bc-style {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--gold2);
+  color: var(--gold);
+  margin-top: 5px;
+  display: inline-block;
+}
+
+.bc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.btn-done {
+  padding: 6px 12px;
+  background: var(--green-bg);
+  border: 1px solid var(--green);
+  color: var(--green);
+  border-radius: 2px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-done:hover { background: var(--green); color: white; }
+.btn-done.marked { opacity: 0.5; cursor: default; }
+
+.btn-del {
+  padding: 6px 10px;
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--cream3);
+  border-radius: 2px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-del:hover { border-color: #c06060; color: #c06060; }
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--cream3);
+  font-size: 0.85rem;
+  border: 1px dashed var(--border2);
+  border-radius: 4px;
+}
+
+.empty-state .big { font-size: 2rem; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">vi<em>s</em>age</div>
+    <div class="login-sub">Панель мастера</div>
+    <div class="login-field">
+      <label>Логин</label>
+      <input type="text" id="loginUser" placeholder="master" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label>Пароль</label>
+      <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Войти</button>
+    <div class="login-err" id="loginErr"></div>
+    <div style="margin-top:1rem; font-size:0.7rem; color:var(--cream3);">Тест: master / visage2024</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin-wrap" id="adminWrap">
+  <div class="admin-hdr">
+    <div class="admin-logo">vi<em>s</em>age</div>
+    <div class="admin-hdr-right">
+      <div class="admin-badge">Мастер</div>
+      <button class="btn-logout" onclick="doLogout()">Выйти</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Сегодня</div>
+        <div class="stat-value" id="statToday">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">На неделе</div>
+        <div class="stat-value" id="statWeek">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Всего записей</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+    </div>
+
+    <!-- DATE TABS -->
+    <div class="date-tabs" id="dateTabs"></div>
+
+    <!-- BOOKINGS -->
+    <div class="bookings-header">
+      <div class="bookings-title" id="bookingsTitle">Записи</div>
+      <button class="btn-add-test" onclick="addTestBooking()">+ Добавить тестовую</button>
+    </div>
+    <div class="bookings-list" id="bookingsList"></div>
+
+  </div>
+</div>
+
+<script>
+// ── AUTH ──────────────────────────────────────────
+const CREDS = { master: 'visage2024' };
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (CREDS[u] && CREDS[u] === p) {
+    sessionStorage.setItem('visage_admin', '1');
+    showAdmin();
+  } else {
+    document.getElementById('loginErr').textContent = 'Неверный логин или пароль';
+  }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  sessionStorage.removeItem('visage_admin');
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('adminWrap').style.display = 'none';
+}
+
+function showAdmin() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('adminWrap').style.display = 'block';
+  loadAdmin();
+}
+
+if (sessionStorage.getItem('visage_admin')) showAdmin();
+
+// ── DATA ──────────────────────────────────────────
+const STYLES = ['Боб-каре','Пикси','Лоб','Слои + удлинение','Натуральные брови','Арка','Феадер-техника'];
+const NAMES = ['Анна К.','Мария С.','Екатерина В.','Ольга П.','Дарья М.','Алина Т.','Светлана Р.','Юлия Н.'];
+const TIMES = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+
+function getBookings() {
+  return JSON.parse(localStorage.getItem('visage_bookings') || '[]');
+}
+function saveBookings(b) {
+  localStorage.setItem('visage_bookings', JSON.stringify(b));
+}
+
+function addTestBooking() {
+  const bookings = getBookings();
+  const today = new Date();
+  const offset = Math.floor(Math.random() * 5);
+  const d = new Date(today); d.setDate(d.getDate() + offset);
+  const dateStr = d.toISOString().slice(0,10);
+  const usedTimes = bookings.filter(b => b.date === dateStr).map(b => b.time);
+  const free = TIMES.filter(t => !usedTimes.includes(t));
+  if (!free.length) { alert('Все слоты на этот день заняты — попробуй ещё раз'); return; }
+  bookings.push({
+    id: Date.now(),
+    name: NAMES[Math.floor(Math.random()*NAMES.length)],
+    phone: '+7 9' + Math.floor(Math.random()*100000000).toString().padStart(9,'0'),
+    date: dateStr,
+    time: free[Math.floor(Math.random()*free.length)],
+    style: STYLES[Math.floor(Math.random()*STYLES.length)],
+    duration: '1–1.5 ч',
+    done: false,
+    createdAt: new Date().toISOString()
+  });
+  saveBookings(bookings);
+  loadAdmin();
+}
+
+// ── UI ────────────────────────────────────────────
+let activeDate = null;
+
+function loadAdmin() {
+  const bookings = getBookings();
+  const today = new Date().toISOString().slice(0,10);
+
+  // Stats
+  const todayB = bookings.filter(b => b.date === today);
+  const weekB = bookings.filter(b => {
+    const d = new Date(b.date); const now = new Date();
+    const diff = (d - now) / 86400000;
+    return diff >= -1 && diff <= 7;
+  });
+  document.getElementById('statToday').textContent = todayB.length;
+  document.getElementById('statWeek').textContent = weekB.length;
+  document.getElementById('statTotal').textContent = bookings.length;
+
+  // Collect unique dates (next 7 days + any booked dates)
+  const dateSet = new Set();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() + i);
+    dateSet.add(d.toISOString().slice(0,10));
+  }
+  bookings.forEach(b => dateSet.add(b.date));
+  const dates = Array.from(dateSet).sort();
+
+  if (!activeDate || !dates.includes(activeDate)) activeDate = today;
+
+  // Date tabs
+  const tabsEl = document.getElementById('dateTabs');
+  tabsEl.innerHTML = '';
+  const DAY_RU = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  dates.forEach(dt => {
+    const d = new Date(dt + 'T00:00:00');
+    const count = bookings.filter(b => b.date === dt).length;
+    const tab = document.createElement('div');
+    tab.className = 'date-tab' + (dt === activeDate ? ' active' : '');
+    const label = dt === today ? 'Сегодня' : dt === new Date(Date.now()+86400000).toISOString().slice(0,10) ? 'Завтра' : DAY_RU[d.getDay()] + ' ' + d.getDate();
+    tab.innerHTML = `<span class="date-tab-day">${label}</span><span class="date-tab-count">${count} записей</span>`;
+    tab.onclick = () => { activeDate = dt; loadAdmin(); };
+    tabsEl.appendChild(tab);
+  });
+
+  // Bookings list
+  const list = document.getElementById('bookingsList');
+  list.innerHTML = '';
+  document.getElementById('bookingsTitle').textContent =
+    activeDate === today ? 'Сегодня' :
+    activeDate === new Date(Date.now()+86400000).toISOString().slice(0,10) ? 'Завтра' :
+    'Записи на ' + activeDate;
+
+  const dayBookings = bookings
+    .filter(b => b.date === activeDate)
+    .sort((a,b) => a.time.localeCompare(b.time));
+
+  if (!dayBookings.length) {
+    list.innerHTML = '<div class="empty-state"><div class="big">📅</div>Записей на этот день нет</div>';
+    return;
+  }
+
+  dayBookings.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'booking-card' + (b.done ? ' done' : '');
+    card.innerHTML = `
+      <div class="bc-time">${b.time}</div>
+      <div class="bc-info">
+        <div class="bc-name">${b.name}</div>
+        <div class="bc-meta">
+          <span>${b.phone}</span>
+          <span>${b.duration}</span>
+        </div>
+        <span class="bc-style">${b.style}</span>
+      </div>
+      <div class="bc-actions">
+        <button class="btn-done ${b.done ? 'marked' : ''}" onclick="markDone(${b.id})" ${b.done ? 'disabled' : ''}>
+          ${b.done ? '✓ Выполнено' : 'Выполнено'}
+        </button>
+        <button class="btn-del" onclick="deleteBooking(${b.id})">✕</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function markDone(id) {
+  const bookings = getBookings();
+  const b = bookings.find(x => x.id === id);
+  if (b) { b.done = true; saveBookings(bookings); loadAdmin(); }
+}
+
+function deleteBooking(id) {
+  if (!confirm('Удалить запись?')) return;
+  saveBookings(getBookings().filter(x => x.id !== id));
+  loadAdmin();
+}
+</script>
+</body>
+</html>
