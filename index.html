@@ -124,7 +124,7 @@ body::before {
 }
 .screen::-webkit-scrollbar { display: none; }
 .screen.active { transform: translateX(0); }
-.screen.left   { transform: translateX(-40%) scale(0.95); opacity: 0.5; }
+.screen.left   { transform: translateX(-100%); opacity: 0; pointer-events: none; }
 
 /* ── BOTTOM BAR ── */
 .bottom-bar {
@@ -952,13 +952,13 @@ let selDate = null;
 let selTime = null;
 let aiDone = false;
 
-const STABILITY_KEY = 'sk-geWi679uwUcHvtZ5omHOaqwG49nvSNsiS711TbVILP9FmyGB';
+const WORKER_URL = 'https://autumn-wildflower-6235.bonanchik322.workers.dev';
 
 const stylePrompts = {
-  'Боб-каре': 'bob haircut, sharp jaw-length hair, sleek straight bob',
+  'Боб-каре': 'bob haircut, sharp jaw-length hair, sleek straight bob cut',
   'Пикси': 'pixie haircut, very short feminine hair, tapered sides',
   'Лоб': 'long bob lob haircut collarbone length, soft waves',
-  'Слои + удлинение': 'long layered hair, cascading layers, voluminous',
+  'Слои + удлинение': 'long layered hair, cascading layers, voluminous textured ends',
   'Натуральные брови': 'natural soft arched eyebrows, groomed natural shape',
   'Широкие прямые': 'thick straight bold eyebrows, horizontal defined brows',
   'Арка': 'high arched elegant eyebrows',
@@ -1148,75 +1148,43 @@ async function startGen(){
 }
 
 async function genImage(){
-  console.log('🚀 Starting Stability AI generation...');
+  console.log('🚀 Sending to Cloudflare Worker → Gemini...');
 
-  // Compress photo
   const compressed = await compressPhoto(photoUrl);
-  const blob = await (await fetch(compressed)).blob();
+  const base64 = compressed.split(',')[1];
+  const mime = compressed.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
+  const stylePrompt = stylePrompts[selStyle.name] || selStyle.name;
 
-  const styleDesc = stylePrompts[selStyle.name] || selStyle.name;
-  const prompt = `portrait photo, ${styleDesc}, same person, photorealistic, high quality, professional photo`;
-  const negPrompt = 'cartoon, drawing, anime, different person, changed face, ugly, deformed';
+  console.log(`📝 Style: ${selStyle.name} → ${stylePrompt}`);
+  console.log(`🖼 Image size: ${base64.length} chars`);
 
-  console.log(`📝 Prompt: ${prompt}`);
-  console.log(`🖼 Image blob size: ${blob.size} bytes`);
-
-  const form = new FormData();
-  form.append('image', blob, 'photo.jpg');
-  form.append('prompt', prompt);
-  form.append('negative_prompt', negPrompt);
-  form.append('output_format', 'jpeg');
-  form.append('strength', '0.65');
-
-  console.log('📡 Sending to Stability AI...');
-
-  const res = await fetch('https://api.stability.ai/v2beta/stable-image/edit/inpaint', {
+  const res = await fetch(WORKER_URL, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${STABILITY_KEY}`,
-      'Accept': 'image/*',
-    },
-    body: form
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      imageBase64: base64,
+      imageMime: mime,
+      styleName: selStyle.name,
+      stylePrompt: stylePrompt
+    })
   });
 
-  console.log(`📡 Response status: ${res.status}`);
+  console.log(`📡 Worker response: ${res.status}`);
 
   if (!res.ok) {
     const err = await res.text();
-    console.error('❌ Stability AI error:', err);
-
-    // Fallback: try structure endpoint
-    console.log('🔄 Trying structure endpoint...');
-    const form2 = new FormData();
-    form2.append('image', blob, 'photo.jpg');
-    form2.append('prompt', prompt);
-    form2.append('negative_prompt', negPrompt);
-    form2.append('output_format', 'jpeg');
-
-    const res2 = await fetch('https://api.stability.ai/v2beta/stable-image/control/structure', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${STABILITY_KEY}`,
-        'Accept': 'image/*',
-      },
-      body: form2
-    });
-
-    console.log(`📡 Fallback status: ${res2.status}`);
-    if (!res2.ok) {
-      const err2 = await res2.text();
-      console.error('❌ Fallback error:', err2);
-      throw new Error('Stability AI failed: ' + err2);
-    }
-
-    const imgBlob2 = await res2.blob();
-    console.log('🎉 Got image from fallback!');
-    return URL.createObjectURL(imgBlob2);
+    console.error('❌ Worker error:', err);
+    throw new Error('Worker error: ' + res.status);
   }
 
-  const imgBlob = await res.blob();
-  console.log(`🎉 Got image! Size: ${imgBlob.size} bytes`);
-  return URL.createObjectURL(imgBlob);
+  const data = await res.json();
+  console.log('✅ Worker response:', data.success ? '🎉 Got image!' : '❌ ' + data.error);
+
+  if (data.success && data.imageBase64) {
+    return `data:${data.imageMime};base64,${data.imageBase64}`;
+  }
+
+  throw new Error(data.error || 'No image returned');
 }
 
 async function compressPhoto(dataUrl) {
