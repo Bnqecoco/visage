@@ -952,17 +952,17 @@ let selDate = null;
 let selTime = null;
 let aiDone = false;
 
-const GEMINI_KEY = 'AQ.Ab8RN6Lk4Mz0zXAsCxpGw9hakV0-zj7snbd0xQo0Ynttirox5w';
+const STABILITY_KEY = 'sk-geWi679uwUcHvtZ5omHOaqwG49nvSNsiS711TbVILP9FmyGB';
 
 const stylePrompts = {
-  'Боб-каре': 'Bob haircut, sharp horizontal line at jaw level, sleek straight hair',
-  'Пикси': 'Pixie haircut, very short feminine hair, tapered sides',
-  'Лоб': 'Long bob lob haircut to shoulders, soft waves, collarbone length',
-  'Слои + удлинение': 'Long layered haircut with volume, cascading layers, textured ends',
-  'Натуральные брови': 'Natural soft arched eyebrows, well-groomed natural shape',
-  'Широкие прямые': 'Thick straight horizontal eyebrows, bold defined brows',
-  'Арка': 'High arched eyebrows, elegant arch, defined brows',
-  'Феадер-техника': 'Feathered fluffy eyebrows, wispy natural brow hairs, full brows',
+  'Боб-каре': 'bob haircut, sharp jaw-length hair, sleek straight bob',
+  'Пикси': 'pixie haircut, very short feminine hair, tapered sides',
+  'Лоб': 'long bob lob haircut collarbone length, soft waves',
+  'Слои + удлинение': 'long layered hair, cascading layers, voluminous',
+  'Натуральные брови': 'natural soft arched eyebrows, groomed natural shape',
+  'Широкие прямые': 'thick straight bold eyebrows, horizontal defined brows',
+  'Арка': 'high arched elegant eyebrows',
+  'Феадер-техника': 'feathered fluffy full eyebrows, wispy natural brow hairs',
 };
 
 // ── FAKE BOOKED ────────────────────────────────────
@@ -1148,79 +1148,75 @@ async function startGen(){
 }
 
 async function genImage(){
-  // Compress photo to reduce size
+  console.log('🚀 Starting Stability AI generation...');
+
+  // Compress photo
   const compressed = await compressPhoto(photoUrl);
-  const base64 = compressed.split(',')[1];
-  const mimeMatch = compressed.match(/data:([^;]+);/);
-  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const blob = await (await fetch(compressed)).blob();
 
   const styleDesc = stylePrompts[selStyle.name] || selStyle.name;
-  const prompt = `You are a professional photo editor. Edit this portrait photo to show the person with a new hairstyle: ${styleDesc}.
+  const prompt = `portrait photo, ${styleDesc}, same person, photorealistic, high quality, professional photo`;
+  const negPrompt = 'cartoon, drawing, anime, different person, changed face, ugly, deformed';
 
-IMPORTANT RULES:
-- Keep the person's face IDENTICAL: same skin, eyes, nose, mouth, expression
-- Keep the background and clothing the same
-- ONLY change the hairstyle/hair color/eyebrows as described
-- Make it look photorealistic, like a real photo
-- High quality output`;
+  console.log(`📝 Prompt: ${prompt}`);
+  console.log(`🖼 Image blob size: ${blob.size} bytes`);
 
-  // Try imagen-3 first (best for image editing), fallback to gemini flash
-  const models = [
-    'gemini-2.0-flash-exp',
-    'gemini-1.5-flash-latest',
-  ];
+  const form = new FormData();
+  form.append('image', blob, 'photo.jpg');
+  form.append('prompt', prompt);
+  form.append('negative_prompt', negPrompt);
+  form.append('output_format', 'jpeg');
+  form.append('strength', '0.65');
 
-  for (const model of models) {
-    try {
-      console.log(`🚀 Trying model: ${model}`);
-      console.log(`📝 Prompt: ${prompt}`);
-      console.log(`🖼 Photo size: ${base64.length} chars, mime: ${mime}`);
+  console.log('📡 Sending to Stability AI...');
 
-      const body = {
-        contents: [{
-          parts: [
-            { text: prompt },
-            { inline_data: { mime_type: mime, data: base64 } }
-          ]
-        }],
-        generationConfig: {
-          responseModalities: ['TEXT', 'IMAGE'],
-          temperature: 0.4,
-        }
-      };
+  const res = await fetch('https://api.stability.ai/v2beta/stable-image/edit/inpaint', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${STABILITY_KEY}`,
+      'Accept': 'image/*',
+    },
+    body: form
+  });
 
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+  console.log(`📡 Response status: ${res.status}`);
 
-      console.log(`📡 Response status: ${res.status}`);
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('❌ Stability AI error:', err);
 
-      if (!res.ok) {
-        const err = await res.text();
-        console.error(`❌ Model ${model} HTTP error ${res.status}:`, err);
-        continue;
-      }
+    // Fallback: try structure endpoint
+    console.log('🔄 Trying structure endpoint...');
+    const form2 = new FormData();
+    form2.append('image', blob, 'photo.jpg');
+    form2.append('prompt', prompt);
+    form2.append('negative_prompt', negPrompt);
+    form2.append('output_format', 'jpeg');
 
-      const d = await res.json();
-      console.log(`✅ Response received:`, JSON.stringify(d).slice(0, 500));
+    const res2 = await fetch('https://api.stability.ai/v2beta/stable-image/control/structure', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${STABILITY_KEY}`,
+        'Accept': 'image/*',
+      },
+      body: form2
+    });
 
-      const parts = d.candidates?.[0]?.content?.parts || [];
-      console.log(`📦 Parts count: ${parts.length}`, parts.map(p => p.inline_data ? 'IMAGE' : 'TEXT'));
-
-      for (const p of parts) {
-        if (p.inline_data?.mime_type?.startsWith('image/')) {
-          console.log(`🎉 Got image! mime: ${p.inline_data.mime_type}, size: ${p.inline_data.data.length}`);
-          return 'data:' + p.inline_data.mime_type + ';base64,' + p.inline_data.data;
-        }
-      }
-      console.warn(`⚠️ Model ${model}: no image in response. Full response:`, d);
-    } catch(e) {
-      console.error(`💥 Model ${model} exception:`, e);
+    console.log(`📡 Fallback status: ${res2.status}`);
+    if (!res2.ok) {
+      const err2 = await res2.text();
+      console.error('❌ Fallback error:', err2);
+      throw new Error('Stability AI failed: ' + err2);
     }
+
+    const imgBlob2 = await res2.blob();
+    console.log('🎉 Got image from fallback!');
+    return URL.createObjectURL(imgBlob2);
   }
-  throw new Error('all models failed');
+
+  const imgBlob = await res.blob();
+  console.log(`🎉 Got image! Size: ${imgBlob.size} bytes`);
+  return URL.createObjectURL(imgBlob);
 }
 
 async function compressPhoto(dataUrl) {
@@ -1228,7 +1224,7 @@ async function compressPhoto(dataUrl) {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const max = 768;
+      const max = 1024;
       let w = img.width, h = img.height;
       if (w > max || h > max) {
         if (w > h) { h = Math.round(h * max / w); w = max; }
@@ -1236,7 +1232,7 @@ async function compressPhoto(dataUrl) {
       }
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', 0.85));
+      resolve(canvas.toDataURL('image/jpeg', 0.9));
     };
     img.src = dataUrl;
   });
